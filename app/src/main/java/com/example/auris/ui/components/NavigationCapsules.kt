@@ -1,7 +1,9 @@
 package com.example.auris.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -21,9 +23,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.foundation.layout.offset
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.DocumentScanner
+import androidx.compose.material.icons.outlined.FormatListBulleted
+import androidx.compose.material.icons.outlined.Forward10
+import androidx.compose.material.icons.outlined.Replay10
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.ui.draw.shadow
 
-// The dark color used for the capsule backgrounds
-val AurisCapsule = Color(0xFF1C1C1C)
+
+// Color definition
+val CapsuleDark = Color(0xFF1A1A1C)
+val CapsuleBorder = Color(0xFF2E2E32)
+
 
 // --- 1. GLOBAL NAV CAPSULE (Home, Explore, Collection) ---
 
@@ -33,7 +47,7 @@ fun GlobalCapsule(navController: NavController, currentRoute: String) {
         modifier = Modifier
             .height(64.dp) // Matched to feel as substantial as the Reader navbar
             .clip(CircleShape)
-            .background(AurisCapsule)
+            .background(CapsuleDark)
             .padding(horizontal = 6.dp), // Inner padding so the bubbles don't touch the edges
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -104,121 +118,152 @@ fun CapsuleNavItem(icon: ImageVector, label: String, isSelected: Boolean, onClic
 
 @Composable
 fun ReaderCapsule() {
-    // State to handle the toggle switch visually
-    var isListeningMode by remember { mutableStateOf(true) }
+    var isPlaying by remember { mutableStateOf(false) }
+    var isFocusMode by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Inner row for the items with spacing between the individual pills
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // 1. Time / Progress Indicator Pill
+            // 1. Navigation Pill ─────────────────────────────────────────────
             Surface(
                 shape = CircleShape,
-                color = AurisCapsule,
-                modifier = Modifier.height(56.dp)
+                color = CapsuleDark,
+                border = BorderStroke(0.5.dp, CapsuleBorder),
+                shadowElevation = 12.dp,
+                modifier = Modifier
+                    .height(56.dp)
+                    .clickable { /* TODO: Open TOC Sheet */ }
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Schedule,
-                        contentDescription = "Time",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
+                        imageVector = Icons.Outlined.FormatListBulleted,
+                        contentDescription = "Table of Contents",
+                        tint = Color.White.copy(alpha = 0.40f),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .width(0.5.dp)
+                            .height(18.dp)
+                            .background(Color.White.copy(alpha = 0.12f))
                     )
                     Text(
-                        text = "10:24",
-                        color = Color.White,
+                        text = "12 / 340",
+                        color = Color.White.copy(alpha = 0.9f),
                         fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp
+                        fontSize = 14.sp
                     )
                 }
             }
 
-            // 2. The Read / Listen Toggle Pill
+            // 2. Media Player Pill ───────────────────────────────────────────
             Surface(
                 shape = CircleShape,
-                color = AurisCapsule,
+                color = CapsuleDark,
+                border = BorderStroke(0.5.dp, CapsuleBorder),
+                shadowElevation = 12.dp,
                 modifier = Modifier.height(56.dp)
             ) {
                 Row(
-                    // Inner padding to give the white selection bubble room to float
-                    modifier = Modifier.padding(4.dp),
+                    modifier = Modifier.padding(horizontal = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Read Segment
                     Box(
                         modifier = Modifier
+                            .size(40.dp)
                             .clip(CircleShape)
-                            .background(if (!isListeningMode) Color.White else Color.Transparent)
-                            .clickable { isListeningMode = false }
-                            .padding(horizontal = 24.dp, vertical = 14.dp),
+                            .clickable { /* TODO: Rewind 10s */ },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "Read",
-                            color = if (!isListeningMode) Color.Black else Color.LightGray,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp
+                        Icon(
+                            Icons.Outlined.Replay10,
+                            contentDescription = "Rewind 10s",
+                            tint = Color.White.copy(alpha = 0.42f),
+                            modifier = Modifier.size(20.dp)
                         )
                     }
 
-                    // Listen Segment
                     Box(
                         modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .size(42.dp)
                             .clip(CircleShape)
-                            .background(if (isListeningMode) Color.White else Color.Transparent)
-                            .clickable { isListeningMode = true }
-                            .padding(horizontal = 24.dp, vertical = 14.dp),
+                            .background(Color.White)
+                            .clickable { isPlaying = !isPlaying },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "Listen",
-                            color = if (isListeningMode) Color.Black else Color.LightGray,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp
+                        Icon(
+                            imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                            contentDescription = if (isPlaying) "Pause" else "Play",
+                            tint = CapsuleDark,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .clickable { /* TODO: Forward 10s */ },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Outlined.Forward10,
+                            contentDescription = "Forward 10s",
+                            tint = Color.White.copy(alpha = 0.42f),
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
             }
 
-            // 3. Brightness Circle Button
+            // 3. Focus Mode Pill ─────────────────────────────────────────────
             Surface(
                 shape = CircleShape,
-                color = AurisCapsule,
-                modifier = Modifier.size(56.dp)
+                color = if (isFocusMode) Color.White else CapsuleDark,
+                border = BorderStroke(0.5.dp, if (isFocusMode) Color.Transparent else CapsuleBorder),
+                shadowElevation = 12.dp,
+                modifier = Modifier
+                    .size(56.dp)
+                    .clickable { isFocusMode = !isFocusMode }
             ) {
-                IconButton(onClick = { /* TODO: Open Brightness Slider */ }) {
+                Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = Icons.Outlined.LightMode,
-                        contentDescription = "Brightness",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        imageVector = Icons.Outlined.DocumentScanner,
+                        contentDescription = "Focus Mode",
+                        tint = if (isFocusMode) CapsuleDark else Color.White.copy(alpha = 0.6f),
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
 
-            // 4. Settings/Formatting Circle Button
+            // 4. Settings Pill ───────────────────────────────────────────────
             Surface(
                 shape = CircleShape,
-                color = AurisCapsule,
-                modifier = Modifier.size(56.dp)
+                color = CapsuleDark,
+                border = BorderStroke(0.5.dp, CapsuleBorder),
+                shadowElevation = 12.dp,
+                modifier = Modifier
+                    .size(56.dp)
+                    .clickable { /* TODO: Open Display Settings */ }
             ) {
-                IconButton(onClick = { /* TODO: Open Display Settings */ }) {
+                Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Outlined.Tune,
-                        contentDescription = "Settings",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
+                        contentDescription = "Display Settings",
+                        tint = Color.White.copy(alpha = 0.55f),
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
